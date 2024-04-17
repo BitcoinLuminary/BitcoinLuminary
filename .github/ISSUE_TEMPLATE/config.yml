@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: BitcoinLuminary Core Security Policy
+    url: https://github.com/bitcoinluminary/bitcoinluminary/blob/master/SECURITY.md
+    about: View security policy
+  - name: BitcoinLuminary Core Developers
+    url: https://bitcoincore.org
+    about: BitcoinLuminary Core homepage

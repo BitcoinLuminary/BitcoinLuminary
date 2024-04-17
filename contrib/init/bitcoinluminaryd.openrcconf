@@ -1,0 +1,33 @@
+# /etc/conf.d/bitcoinluminaryd: config file for /etc/init.d/bitcoinluminaryd
+
+# Config file location
+#BITCOINLUMINARYD_CONFIGFILE="/etc/bitcoinluminary/bitcoinluminary.conf"
+
+# What directory to write pidfile to?  (created and owned by $BITCOINLUMINARYD_USER)
+#BITCOINLUMINARYD_PIDDIR="/var/run/bitcoinluminaryd"
+
+# What filename to give the pidfile
+#BITCOINLUMINARYD_PIDFILE="${BITCOINLUMINARYD_PIDDIR}/bitcoinluminaryd.pid"
+
+# Where to write bitcoinluminaryd data (be mindful that the blockchain is large)
+#BITCOINLUMINARYD_DATADIR="/var/lib/bitcoinluminaryd"
+
+# User and group to own bitcoinluminaryd process
+#BITCOINLUMINARYD_USER="bitcoinluminary"
+#BITCOINLUMINARYD_GROUP="bitcoinluminary"
+
+# Path to bitcoinluminaryd executable
+#BITCOINLUMINARYD_BIN="/usr/bin/bitcoinluminaryd"
+
+# Nice value to run bitcoinluminaryd under
+#BITCOINLUMINARYD_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#BITCOINLUMINARYD_OPTS=""
+
+# The timeout in seconds OpenRC will wait for bitcoinluminaryd to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+BITCOINLUMINARYD_SIGTERM_TIMEOUT=600

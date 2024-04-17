@@ -1,0 +1,93 @@
+#!/sbin/openrc-run
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/bitcoinluminary/.bitcoinluminary" ]; then
+	BITCOINLUMINARYD_DEFAULT_DATADIR="/var/lib/bitcoinluminary/.bitcoinluminary"
+else
+	BITCOINLUMINARYD_DEFAULT_DATADIR="/var/lib/bitcoinluminaryd"
+fi
+
+BITCOINLUMINARYD_CONFIGFILE=${BITCOINLUMINARYD_CONFIGFILE:-/etc/bitcoinluminary/bitcoinluminary.conf}
+BITCOINLUMINARYD_PIDDIR=${BITCOINLUMINARYD_PIDDIR:-/var/run/bitcoinluminaryd}
+BITCOINLUMINARYD_PIDFILE=${BITCOINLUMINARYD_PIDFILE:-${BITCOINLUMINARYD_PIDDIR}/bitcoinluminaryd.pid}
+BITCOINLUMINARYD_DATADIR=${BITCOINLUMINARYD_DATADIR:-${BITCOINLUMINARYD_DEFAULT_DATADIR}}
+BITCOINLUMINARYD_USER=${BITCOINLUMINARYD_USER:-${BITCOINLUMINARY_USER:-bitcoinluminary}}
+BITCOINLUMINARYD_GROUP=${BITCOINLUMINARYD_GROUP:-bitcoinluminary}
+BITCOINLUMINARYD_BIN=${BITCOINLUMINARYD_BIN:-/usr/bin/bitcoinluminaryd}
+BITCOINLUMINARYD_NICE=${BITCOINLUMINARYD_NICE:-${NICELEVEL:-0}}
+BITCOINLUMINARYD_OPTS="${BITCOINLUMINARYD_OPTS:-${BITCOINLUMINARY_OPTS}}"
+
+name="BitcoinLuminary Core Daemon"
+description="BitcoinLuminary cryptocurrency P2P network daemon"
+
+command="/usr/bin/bitcoinluminaryd"
+command_args="-pid=\"${BITCOINLUMINARYD_PIDFILE}\" \
+		-conf=\"${BITCOINLUMINARYD_CONFIGFILE}\" \
+		-datadir=\"${BITCOINLUMINARYD_DATADIR}\" \
+		-daemon \
+		${BITCOINLUMINARYD_OPTS}"
+
+required_files="${BITCOINLUMINARYD_CONFIGFILE}"
+start_stop_daemon_args="-u ${BITCOINLUMINARYD_USER} \
+			-N ${BITCOINLUMINARYD_NICE} -w 2000"
+pidfile="${BITCOINLUMINARYD_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${BITCOINLUMINARYD_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${BITCOINLUMINARYD_USER}:${BITCOINLUMINARYD_GROUP}" \
+	"${BITCOINLUMINARYD_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${BITCOINLUMINARYD_USER}:${BITCOINLUMINARYD_GROUP}" \
+	"${BITCOINLUMINARYD_PIDDIR}"
+
+	checkpath -f \
+	-o "${BITCOINLUMINARYD_USER}:${BITCOINLUMINARYD_GROUP}" \
+	-m 0660 \
+	"${BITCOINLUMINARYD_CONFIGFILE}"
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if grep -qs '^rpcuser=' "${BITCOINLUMINARYD_CONFIGFILE}" && \
+		! grep -qs '^rpcpassword=' "${BITCOINLUMINARYD_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run bitcoinluminaryd."
+		eerror "The setting must appear in ${BITCOINLUMINARYD_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"BitcoinLuminary Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

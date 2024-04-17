@@ -1,0 +1,7 @@
+[main]
+host = https://www.transifex.com
+
+[o:bitcoinluminary:p:bitcoinluminary:r:qt-translation-025x]
+file_filter = src/qt/locale/bitcoinluminary_<lang>.xlf
+source_file = src/qt/locale/bitcoinluminary_en.xlf
+source_lang = en
